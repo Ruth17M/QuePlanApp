@@ -3,8 +3,34 @@ import SwiftUI
 struct NegocioCalendarioView: View {
     @EnvironmentObject private var session: SessionManager
     @StateObject private var vm = NegocioEventosViewModel()
-    @State private var diaSeleccionado = Date()
+    @State private var selectedDay = Calendar.current.component(.day, from: Date())
+    @State private var currentMonth: Date = Date()
+    @State private var showFullCal = false
     @State private var mostrarCrear = false
+
+    private let cal = Calendar.current
+    private let weekLetters = ["D","L","M","M","J","V","S"]
+
+    private var highlightedDays: Set<Int> {
+        Set(vm.activos.compactMap { evento in
+            guard let f = evento.fecha else { return nil }
+            guard cal.isDate(f, equalTo: currentMonth, toGranularity: .month) else { return nil }
+            return cal.component(.day, from: f)
+        })
+    }
+
+    private var eventosDelDia: [Evento] {
+        vm.activos.filter { evento in
+            guard let f = evento.fecha else { return false }
+            return cal.isDate(f, equalTo: fechaDelMes(selectedDay), toGranularity: .day)
+        }
+    }
+
+    private func fechaDelMes(_ day: Int) -> Date {
+        var comps = cal.dateComponents([.year, .month], from: currentMonth)
+        comps.day = day
+        return cal.date(from: comps) ?? Date()
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,28 +43,78 @@ struct NegocioCalendarioView: View {
                             imagenUrl: session.negocio?.logoUrl
                         )
 
-                        WeekCalendarView(diaSeleccionado: $diaSeleccionado,
-                                         diasConEventos: diasConEventos)
+                        VStack(spacing: 12) {
+                            HStack {
+                                Button {
+                                    withAnimation { currentMonth = cal.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth }
+                                } label: {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Theme.pink)
+                                }
+                                Spacer()
+                                MonthPickerButton(monthName: nombreMes(currentMonth))
+                                Spacer()
+                                Button {
+                                    withAnimation { currentMonth = cal.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth }
+                                } label: {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Theme.pink)
+                                }
+                            }
 
-                        let eventosDia = vm.eventosEn(diaSeleccionado)
+                            if showFullCal {
+                                MonthCalendarView(
+                                    selectedDay: $selectedDay,
+                                    highlightedDays: highlightedDays,
+                                    month: currentMonth
+                                )
+                            } else {
+                                weekStrip
+                            }
+
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    showFullCal.toggle()
+                                }
+                            } label: {
+                                Image(systemName: showFullCal ? "chevron.up" : "chevron.down")
+                                    .foregroundColor(Theme.pink)
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding(16)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text("\(Calendar.current.component(.day, from: diaSeleccionado))")
-                                .font(.system(size: 30, weight: .bold))
-                            Text(esHoy ? "Hoy" : diaSemana(diaSeleccionado))
-                                .font(.subheadline).foregroundColor(Theme.gray)
-                            Spacer()
-                            Text("\(eventosDia.count) actividades programadas")
-                                .font(.caption).foregroundColor(Theme.gray)
+                            Text("\(selectedDay)")
+                                .font(.system(size: 42, weight: .bold))
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(nombreDia(fechaDelMes(selectedDay)))
+                                        .font(.system(size: 16, weight: .semibold))
+                                    if cal.isDateInToday(fechaDelMes(selectedDay)) {
+                                        Text("Hoy")
+                                            .font(.subheadline)
+                                            .foregroundColor(Theme.gray)
+                                    }
+                                }
+                                Text("\(eventosDelDia.count) \(eventosDelDia.count == 1 ? "actividad programada" : "actividades programadas")")
+                                    .font(.caption)
+                                    .foregroundColor(Theme.gray)
+                            }
                         }
 
                         if vm.isLoading {
                             ProgressView().frame(maxWidth: .infinity).padding()
-                        } else if eventosDia.isEmpty {
+                        } else if eventosDelDia.isEmpty {
                             EmptyStateView(icon: "calendar.badge.plus",
                                            title: "Sin actividades este día",
                                            subtitle: "Pulsa + para publicar un evento.")
                         } else {
-                            ForEach(eventosDia) { evento in
+                            ForEach(eventosDelDia) { evento in
                                 NavigationLink {
                                     EventoNegocioDetalleView(evento: evento)
                                 } label: {
@@ -77,11 +153,68 @@ struct NegocioCalendarioView: View {
         }
     }
 
-    private var esHoy: Bool { Calendar.current.isDateInToday(diaSeleccionado) }
+    private var weekStrip: some View {
+        VStack(spacing: 14) {
+            HStack {
+                ForEach(weekLetters, id: \.self) { letter in
+                    Text(letter).font(.caption.bold()).foregroundColor(Theme.gray)
+                        .frame(maxWidth: .infinity)
+                }
+            }
 
-    private var diasConEventos: Set<Int> {
-        let cal = Calendar.current
-        return Set(vm.activos.compactMap { $0.fecha.map { cal.component(.day, from: $0) } })
+            HStack {
+                ForEach(diasDeLaSemana(), id: \.self) { fecha in
+                    let dia = cal.component(.day, from: fecha)
+                    let esSeleccionado = cal.isDate(fecha, inSameDayAs: fechaDelMes(selectedDay))
+                    let esHoy = cal.isDateInToday(fecha)
+                    let isHighlighted = highlightedDays.contains(dia)
+                    VStack(spacing: 4) {
+                        Group {
+                            if esSeleccionado && esHoy {
+                                Text("\(dia)")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(Theme.pink)
+                                    .frame(width: 34, height: 34)
+                                    .background(Theme.pinkLight)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Theme.pink, lineWidth: 1.5))
+                            } else if esSeleccionado {
+                                Text("\(dia)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
+                                    .frame(width: 34, height: 34)
+                                    .background(Theme.pink)
+                                    .clipShape(Circle())
+                            } else if esHoy {
+                                Text("\(dia)")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.ink)
+                                    .frame(width: 34, height: 34)
+                                    .background(Theme.pinkLight)
+                                    .clipShape(Circle())
+                            } else {
+                                Text("\(dia)")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.ink)
+                                    .frame(width: 34, height: 34)
+                            }
+                        }
+                        Circle()
+                            .fill(isHighlighted ? Theme.pink : .clear)
+                            .frame(width: 5, height: 5)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .onTapGesture { selectedDay = dia }
+                }
+            }
+        }
+    }
+
+    private func diasDeLaSemana() -> [Date] {
+        let today = Date()
+        let weekday = cal.component(.weekday, from: today)
+        let startOfWeek = cal.date(byAdding: .day, value: -(weekday - 1), to: today)!
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: startOfWeek) }
     }
 
     private func cargar() async {
@@ -89,11 +222,17 @@ struct NegocioCalendarioView: View {
         await vm.cargar(idNegocio: id)
     }
 
-    private func diaSemana(_ date: Date) -> String {
+    private func nombreMes(_ date: Date) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "es_MX")
-        f.dateFormat = "EEEE"
+        f.dateFormat = "MMMM yyyy"
         return f.string(from: date).capitalized
+    }
+
+    private func nombreDia(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "es_MX")
+        return f.shortWeekdaySymbols[cal.component(.weekday, from: date) - 1].capitalized
     }
 }
 

@@ -149,15 +149,40 @@ struct ClienteCalendarioView: View {
             HStack {
                 ForEach(diasDeLaSemana(), id: \.self) { fecha in
                     let dia = cal.component(.day, from: fecha)
-                    let esHoy = cal.isDate(fecha, inSameDayAs: fechaDelMes(selectedDay))
+                    let esSeleccionado = cal.isDate(fecha, inSameDayAs: fechaDelMes(selectedDay))
+                    let esHoy = cal.isDateInToday(fecha)
                     let isHighlighted = highlightedDays.contains(dia)
                     VStack(spacing: 4) {
-                        Text("\(dia)")
-                            .font(.subheadline)
-                            .foregroundColor(esHoy ? .white : Theme.ink)
-                            .frame(width: 34, height: 34)
-                            .background(esHoy ? Theme.pink : Color.clear)
-                            .clipShape(Circle())
+                        Group {
+                            if esSeleccionado && esHoy {
+                                Text("\(dia)")
+                                    .font(.subheadline.bold())
+                                    .foregroundColor(Theme.pink)
+                                    .frame(width: 34, height: 34)
+                                    .background(Theme.pinkLight)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Theme.pink, lineWidth: 1.5))
+                            } else if esSeleccionado {
+                                Text("\(dia)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
+                                    .frame(width: 34, height: 34)
+                                    .background(Theme.pink)
+                                    .clipShape(Circle())
+                            } else if esHoy {
+                                Text("\(dia)")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.ink)
+                                    .frame(width: 34, height: 34)
+                                    .background(Theme.pinkLight)
+                                    .clipShape(Circle())
+                            } else {
+                                Text("\(dia)")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.ink)
+                                    .frame(width: 34, height: 34)
+                            }
+                        }
                         Circle()
                             .fill(isHighlighted ? Theme.pink : .clear)
                             .frame(width: 5, height: 5)
