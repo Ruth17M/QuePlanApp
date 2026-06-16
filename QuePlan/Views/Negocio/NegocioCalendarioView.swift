@@ -145,6 +145,7 @@ struct NegocioCalendarioView: View {
             .navigationBarHidden(true)
             .refreshable { await cargar() }
             .task { await cargar() }
+            .onAppear { Task { await cargar() } }
             .sheet(isPresented: $mostrarCrear, onDismiss: { Task { await cargar() } }) {
                 NavigationStack {
                     EventoFormView(modo: .crear)

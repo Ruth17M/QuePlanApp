@@ -36,7 +36,10 @@ struct GreetingHeader: View {
                     .foregroundColor(Theme.gray)
             }
             Spacer()
-            AvatarView(urlString: imagenUrl, size: 46)
+            NavigationLink(destination: ClientePerfilView()) {
+                AvatarView(urlString: imagenUrl, size: 46)
+            }
+            .buttonStyle(.plain)
         }
     }
 }

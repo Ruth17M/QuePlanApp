@@ -48,6 +48,27 @@ struct EventoDetalleView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
+                    if let id = vm.evento.idNegocio {
+                        NavigationLink {
+                            NegocioPublicoView(idNegocio: id)
+                        } label: {
+                            HStack(spacing: 12) {
+                                AvatarView(urlString: vm.evento.logoUrl, size: 40)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(vm.evento.nombreNegocio ?? "Negocio")
+                                        .font(.subheadline.bold()).foregroundColor(Theme.ink)
+                                    Text("Ver perfil")
+                                        .font(.caption).foregroundColor(Theme.pink)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.caption).foregroundColor(Theme.gray)
+                            }
+                            .padding(12)
+                            .background(Theme.fieldBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
+
                     HStack {
                         Text(vm.evento.nombre ?? "Evento").font(.title2.bold())
                         Spacer()
@@ -93,8 +114,26 @@ struct EventoDetalleView: View {
                         }
                     }
 
+                    // Cupo
+                    HStack {
+                        Image(systemName: "person.3.fill").foregroundColor(Theme.pink)
+                        Text("\(vm.confirmados)")
+                            .font(.subheadline.bold()).foregroundColor(Theme.ink)
+                        Text("de \(vm.evento.cupo ?? 0) confirmados").font(.subheadline).foregroundColor(Theme.gray)
+                        Spacer()
+                        if vm.cupoLleno {
+                            Text("Cupo lleno").font(.caption.bold())
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(Color.orange.opacity(0.15))
+                                .foregroundColor(.orange)
+                                .clipShape(Capsule())
+                        }
+                    }
+
                     Button("Quiero inscribirme") { mostrarReserva = true }
                         .buttonStyle(PrimaryButtonStyle())
+                        .disabled(vm.cupoLleno)
+                        .opacity(vm.cupoLleno ? 0.4 : 1)
                         .padding(.vertical, 4)
 
                     // Opiniones
@@ -112,7 +151,7 @@ struct EventoDetalleView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await vm.cargar() }
         .sheet(isPresented: $mostrarReserva) {
-            ReservaSheet(evento: vm.evento)
+            ReservaSheet(evento: vm.evento, confirmados: vm.confirmados)
                 .presentationDetents([.medium, .large])
         }
     }
@@ -155,10 +194,13 @@ struct OpinionRow: View {
 
 struct ReservaSheet: View {
     let evento: Evento
+    let confirmados: Int
     @EnvironmentObject private var session: SessionManager
     @StateObject private var vm = ReservaViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var reservaExitosa = false
+
+    private var lugaresDisponibles: Int { max(0, (evento.cupo ?? 0) - confirmados) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -182,7 +224,7 @@ struct ReservaSheet: View {
             HStack {
                 Text("Número de personas").font(.subheadline)
                 Spacer()
-                Stepper(value: $vm.cantidadPersonas, in: 1...50) {
+                Stepper(value: $vm.cantidadPersonas, in: 1...max(1, lugaresDisponibles)) {
                     Text("\(vm.cantidadPersonas)")
                         .font(.headline).foregroundColor(Theme.pink)
                 }
@@ -194,6 +236,10 @@ struct ReservaSheet: View {
             Button {
                 Task {
                     guard let idCliente = session.cliente?.idCliente else { return }
+                    if vm.cantidadPersonas > lugaresDisponibles {
+                        vm.errorMessage = "Solo quedan \(lugaresDisponibles) lugar(es) disponible(s)."
+                        return
+                    }
                     if await vm.reservar(idCliente: idCliente, idEvento: evento.idEvento) {
                         reservaExitosa = true
                     }

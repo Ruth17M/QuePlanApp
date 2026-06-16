@@ -139,7 +139,20 @@ struct EditarNegocioView: View {
                             .padding(8).background(Theme.fieldBackground)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    campo("Logo (URL)") { QPTextField(placeholder: "URL del logo", text: $vm.logoUrl) }
+                    campo("Logo del negocio") {
+                        FotoPicker(carpeta: "logos", maximo: 1) { url in
+                            vm.logoUrl = url
+                        } label: {
+                            HStack {
+                                Text(vm.logoUrl.isEmpty ? "Seleccionar logo" : "Logo seleccionado ✓")
+                                    .foregroundColor(vm.logoUrl.isEmpty ? Theme.gray : Theme.pink)
+                                Spacer()
+                                Image(systemName: "photo").foregroundColor(Theme.gray)
+                            }
+                            .padding(.vertical, 14).padding(.horizontal, 16)
+                            .background(Theme.fieldBackground).clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
                     campo("Instagram") { QPTextField(placeholder: "Instagram", text: $vm.instagram) }
                     campo("Facebook") { QPTextField(placeholder: "Facebook", text: $vm.facebook) }
                     campo("TikTok") { QPTextField(placeholder: "TikTok", text: $vm.tiktok) }

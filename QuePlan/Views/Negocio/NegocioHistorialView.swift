@@ -37,7 +37,9 @@ struct NegocioHistorialView: View {
     }
 
     private var eventosOrdenados: [Evento] {
-        vm.eventos.sorted { ($0.fecha ?? .distantPast) > ($1.fecha ?? .distantPast) }
+        vm.eventos
+            .filter { ($0.estado?.lowercased() ?? "activo") != "cancelado" }
+            .sorted { ($0.fecha ?? .distantPast) > ($1.fecha ?? .distantPast) }
     }
 
     private func cargar() async {
@@ -50,6 +52,14 @@ struct HistorialEventoRow: View {
     let evento: Evento
 
     private var cancelado: Bool { (evento.estado?.lowercased() ?? "") == "cancelado" }
+    private var completado: Bool {
+        guard !cancelado, let f = evento.fecha else { return false }
+        return f < Date()
+    }
+    private var proximo: Bool {
+        guard !cancelado, let f = evento.fecha else { return false }
+        return f >= Date()
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -67,18 +77,26 @@ struct HistorialEventoRow: View {
                 }
             }
             Spacer()
-            if cancelado {
-                Text("Cancelado")
-                    .font(.caption2.bold())
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(Theme.danger.opacity(0.15))
-                    .foregroundColor(Theme.danger)
-                    .clipShape(Capsule())
+            Group {
+                if completado {
+                    Text("Completado")
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Theme.success.opacity(0.15))
+                        .foregroundColor(Theme.success)
+                        .clipShape(Capsule())
+                } else if proximo {
+                    Text("Próximo")
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Theme.pinkLight)
+                        .foregroundColor(Theme.pink)
+                        .clipShape(Capsule())
+                }
             }
         }
         .padding(12)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .opacity(cancelado ? 0.6 : 1)
     }
 }

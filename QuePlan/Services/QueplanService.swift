@@ -207,6 +207,38 @@ final class QueplanService {
         try await request("/eventoImagen/getByEvento/\(idEvento)")
     }
 
+    func subirImagen(
+        _ data: Data,
+        contentType: String = "image/jpeg",
+        carpeta: String = "imagenes"
+    ) async throws -> String {
+        guard var comps = URLComponents(string: "\(APIConfig.baseURL)/upload/imagen") else {
+            throw APIError.network
+        }
+        comps.queryItems = [URLQueryItem(name: "carpeta", value: carpeta)]
+        guard let url = comps.url else { throw APIError.network }
+
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let respData: Data
+        do {
+            (respData, _) = try await URLSession.shared.upload(for: req, from: data)
+        } catch {
+            throw APIError.network
+        }
+
+        guard let parsed = try? decoder.decode(UploadResponse.self, from: respData) else {
+            throw APIError.decoding
+        }
+        if let urlString = parsed.url, !urlString.isEmpty {
+            return urlString
+        }
+        throw APIError.server("No se pudo subir la imagen.")
+    }
+
     func agregarImagenEvento(idEvento: Int, url: String) async throws {
         let body = EventoImagenRequest(idEvento: idEvento, url: url)
         try await requestMessage("/eventoImagen/save", method: "POST", body: body)

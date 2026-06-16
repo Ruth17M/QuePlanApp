@@ -84,7 +84,24 @@ struct ClienteRegistroView: View {
                 QPTextField(placeholder: "Nombre", text: $vm.nombre, icon: "person")
                 QPTextField(placeholder: "Usuario", text: $vm.usuario, icon: "at")
                 QPTextField(placeholder: "Teléfono", text: $vm.telefono, keyboard: .phonePad, icon: "phone")
-                QPTextField(placeholder: "Imagen (URL)", text: $vm.imagenUrl, icon: "photo")
+                FotoPicker(carpeta: "perfiles", maximo: 1) { url in
+                    vm.imagenUrl = url
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "photo").foregroundColor(Theme.gray).frame(width: 20)
+                        Group {
+                            if vm.imagenUrl.isEmpty {
+                                Text("Foto de perfil").foregroundColor(Theme.gray)
+                            } else {
+                                Text("Foto seleccionada ✓").foregroundColor(Theme.pink)
+                            }
+                        }
+                        .font(.subheadline)
+                        Spacer()
+                    }
+                    .padding(.vertical, 14).padding(.horizontal, 16)
+                    .background(Theme.fieldBackground).clipShape(RoundedRectangle(cornerRadius: 12))
+                }
                 QPSecureField(placeholder: "Contraseña", text: $vm.password)
 
                 Toggle(isOn: $vm.aceptaTerminos) {
@@ -133,7 +150,24 @@ struct NegocioRegistroView: View {
                 QPTextField(placeholder: "Usuario", text: $vm.usuario, icon: "at")
 
                 descripcionField
-                QPTextField(placeholder: "Logo (URL)", text: $vm.logoUrl, icon: "photo")
+                FotoPicker(carpeta: "logos", maximo: 1) { url in
+                    vm.logoUrl = url
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "photo").foregroundColor(Theme.gray).frame(width: 20)
+                        Group {
+                            if vm.logoUrl.isEmpty {
+                                Text("Logo del negocio").foregroundColor(Theme.gray)
+                            } else {
+                                Text("Logo seleccionado ✓").foregroundColor(Theme.pink)
+                            }
+                        }
+                        .font(.subheadline)
+                        Spacer()
+                    }
+                    .padding(.vertical, 14).padding(.horizontal, 16)
+                    .background(Theme.fieldBackground).clipShape(RoundedRectangle(cornerRadius: 12))
+                }
                 QPTextField(placeholder: "Ubicación", text: $vm.direccion, icon: "mappin.and.ellipse")
                 QPTextField(placeholder: "Teléfono", text: $vm.telefono, keyboard: .phonePad, icon: "phone")
                 QPSecureField(placeholder: "Contraseña", text: $vm.password)

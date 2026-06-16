@@ -27,14 +27,19 @@ struct EventoFormView: View {
             VStack(alignment: .leading, spacing: 16) {
                 InlineError(message: vm.errorMessage)
 
-                // Imagen / cambiar imagen
+                // Imágenes
                 ZStack {
                     RemoteImage(urlString: vm.imagenesTexto.split(whereSeparator: \.isNewline).first.map(String.init))
                         .frame(height: 160).frame(maxWidth: .infinity).clipped()
                         .clipShape(RoundedRectangle(cornerRadius: 14))
-                    Text("Cambiar imagen")
-                        .font(.subheadline.bold()).foregroundColor(.white)
-                        .padding(8).background(.black.opacity(0.35)).clipShape(Capsule())
+                    FotoPicker(carpeta: "imagenes", maximo: 5) { url in
+                        vm.agregarImagen(url)
+                    } label: {
+                        Text("Seleccionar fotos")
+                            .font(.subheadline.bold()).foregroundColor(.white)
+                            .padding(.horizontal, 16).padding(.vertical, 8)
+                            .background(.black.opacity(0.35)).clipShape(Capsule())
+                    }
                 }
 
                 campo("Nombre de la actividad") {
@@ -57,7 +62,12 @@ struct EventoFormView: View {
                     }
                 }
                 campo("Cupo de la actividad") {
-                    QPTextField(placeholder: "Cupo", text: $vm.cupo, keyboard: .numberPad)
+                    HStack {
+                        Stepper("\(vm.cupo) persona(s)", value: $vm.cupo, in: 1...999)
+                            .padding(.vertical, 6).padding(.horizontal, 12)
+                            .background(Theme.fieldBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                 }
                 campo("Dirección de la actividad") {
                     QPTextField(placeholder: "Dirección", text: $vm.ubicacion)

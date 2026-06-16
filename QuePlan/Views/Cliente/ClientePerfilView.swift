@@ -83,8 +83,19 @@ struct EditarClienteView: View {
                     grupo("Teléfono") {
                         QPTextField(placeholder: "Teléfono", text: $vm.telefono, keyboard: .phonePad)
                     }
-                    grupo("Imagen (URL)") {
-                        QPTextField(placeholder: "URL de imagen", text: $vm.imagenUrl)
+                    grupo("Foto de perfil") {
+                        FotoPicker(carpeta: "perfiles", maximo: 1) { url in
+                            vm.imagenUrl = url
+                        } label: {
+                            HStack {
+                                Text(vm.imagenUrl.isEmpty ? "Seleccionar foto" : "Foto seleccionada ✓")
+                                    .foregroundColor(vm.imagenUrl.isEmpty ? Theme.gray : Theme.pink)
+                                Spacer()
+                                Image(systemName: "photo").foregroundColor(Theme.gray)
+                            }
+                            .padding(.vertical, 14).padding(.horizontal, 16)
+                            .background(Theme.fieldBackground).clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
                     }
 
                     NavigationLink("Términos y condiciones") { TerminosView() }

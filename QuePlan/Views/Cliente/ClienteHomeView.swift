@@ -55,26 +55,16 @@ struct ClienteHomeView: View {
 
                     if vm.isLoading {
 
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 40)
-
-                    } else if let error = vm.errorMessage {
-
-                        EmptyStateView(
-                            icon: "wifi.exclamationmark",
-                            title: "Algo salió mal",
-                            subtitle: error
-                        )
+                        ProgressView().frame(maxWidth: .infinity).padding(.top, 40)
 
                     } else if vm.eventosFiltrados.isEmpty {
-
-                        EmptyStateView(
-                            icon: "calendar.badge.exclamationmark",
-                            title: "Sin eventos disponibles",
-                            subtitle: "Vuelve más tarde o ajusta tus filtros."
-                        )
-
+                        if let error = vm.errorMessage {
+                            EmptyStateView(icon: "wifi.exclamationmark", title: "Algo salió mal", subtitle: error)
+                        } else {
+                            EmptyStateView(icon: "calendar.badge.exclamationmark",
+                                           title: "Sin eventos disponibles",
+                                           subtitle: "Vuelve más tarde o ajusta tus filtros.")
+                        }
                     } else {
 
                         ForEach(vm.eventosFiltrados) { evento in
@@ -111,14 +101,16 @@ struct ClienteHomeView: View {
                     .large
                 ])
             } */
-            .onAppear {
+             .onAppear {
                 Task {
                     await vm.cargar()
                 }
             }
             .sheet(isPresented: $mostrarFiltros) {
-                Text("HOLA, EL SHEET FUNCIONA")
-                    .font(.largeTitle)
+                NavigationStack {
+                    FiltrosView(vm: vm)
+                }
+                .presentationDetents([.medium, .large])
             }
         }
     }

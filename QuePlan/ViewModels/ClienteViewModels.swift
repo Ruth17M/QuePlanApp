@@ -27,10 +27,12 @@ final class ClienteHomeViewModel: ObservableObject {
             let cumpleCategoria  = categoriaSeleccionada == nil || evento.categoria == categoriaSeleccionada
             let cumpleFecha: Bool = {
                 guard let fecha = evento.fecha else { return false }
-                return fecha >= fechaDesde && fecha <= fechaHasta
+                let finDelDia = Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: fechaHasta)!
+                return fecha >= fechaDesde && fecha <= finDelDia
             }()
             return cumpleTarifa && cumpleCategoria && cumpleFecha
         }
+        .sorted { ($0.fecha ?? .distantPast) < ($1.fecha ?? .distantPast) }
     }
 
     func cargar() async {
@@ -38,7 +40,7 @@ final class ClienteHomeViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            eventos = try await service.getEventosDisponibles(
+            var raw = try await service.getEventosDisponibles(
                 nombre: busqueda.isEmpty ? nil : busqueda,
                 fechaDesde: isoDay(fechaDesde),
                 fechaHasta: isoDay(fechaHasta)
@@ -47,8 +49,27 @@ final class ClienteHomeViewModel: ObservableObject {
                 guard let fecha = evento.fecha else { return false }
                 return fecha > Date()
             }
+
+            eventos = try await withThrowingTaskGroup(of: Evento.self) { group in
+                for ev in raw {
+                    guard ev.imagenes == nil || ev.imagenes!.isEmpty else {
+                        group.addTask { ev }
+                        continue
+                    }
+                    group.addTask {
+                        (try? await self.service.getEvento(id: ev.idEvento)) ?? ev
+                    }
+                }
+                var result: [Evento] = []
+                for try await ev in group {
+                    result.append(ev)
+                }
+                return result
+            }
         } catch {
-            errorMessage = (error as? APIError)?.errorDescription ?? "No se pudieron cargar los eventos."
+            if eventos.isEmpty {
+                errorMessage = (error as? APIError)?.errorDescription ?? "No se pudieron cargar los eventos."
+            }
         }
     }
 
@@ -75,8 +96,15 @@ final class EventoDetalleViewModel: ObservableObject {
     @Published var imagenes: [String] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var confirmados = 0
 
     private let service = QueplanService.shared
+
+    var cupoDisponible: Int {
+        max(0, (evento.cupo ?? 0) - confirmados)
+    }
+
+    var cupoLleno: Bool { cupoDisponible <= 0 }
 
     init(evento: Evento) {
         self.evento = evento
@@ -102,6 +130,10 @@ final class EventoDetalleViewModel: ObservableObject {
         }
         if opiniones.isEmpty {
             opiniones = (try? await service.getOpiniones(idEvento: evento.idEvento)) ?? []
+        }
+        if let reservas = try? await service.getReservasNegocioEvento(idEvento: evento.idEvento) {
+            confirmados = reservas.filter { $0.estadoEnum == .confirmada || $0.estadoEnum == .completada }
+                .reduce(0) { $0 + ($1.cantidadPersonas ?? 1) }
         }
     }
 }
@@ -161,7 +193,31 @@ final class ClienteReservasViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            reservas = try await service.getReservasCliente(idCliente: idCliente)
+            let raw = try await service.getReservasCliente(idCliente: idCliente)
+
+            let ids = Set(raw.compactMap { $0.idEvento })
+            var cache: [Int: String] = [:]
+            try await withThrowingTaskGroup(of: (Int, String?).self) { group in
+                for id in ids {
+                    group.addTask {
+                        if let detalle = try? await self.service.getEvento(id: id) {
+                            return (id, detalle.imagenes?.first)
+                        }
+                        return (id, nil)
+                    }
+                }
+                for try await (id, img) in group {
+                    cache[id] = img
+                }
+            }
+
+            reservas = raw.map { r in
+                var r2 = r
+                if let img = cache[r.idEvento ?? -1] {
+                    r2.logoUrl = img
+                }
+                return r2
+            }
         } catch {
             errorMessage = (error as? APIError)?.errorDescription ?? "No se pudieron cargar tus actividades."
         }

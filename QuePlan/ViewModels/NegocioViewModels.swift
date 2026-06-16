@@ -21,7 +21,23 @@ final class NegocioEventosViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            eventos = try await service.getEventosNegocio(idNegocio: idNegocio)
+            let raw = try await service.getEventosNegocio(idNegocio: idNegocio)
+            eventos = try await withThrowingTaskGroup(of: Evento.self) { group in
+                for ev in raw {
+                    guard ev.imagenes == nil || ev.imagenes!.isEmpty else {
+                        group.addTask { ev }
+                        continue
+                    }
+                    group.addTask {
+                        (try? await self.service.getEvento(id: ev.idEvento)) ?? ev
+                    }
+                }
+                var result: [Evento] = []
+                for try await ev in group {
+                    result.append(ev)
+                }
+                return result
+            }
         } catch {
             errorMessage = (error as? APIError)?.errorDescription ?? "No se pudieron cargar tus eventos."
         }
@@ -47,7 +63,7 @@ final class EventoFormViewModel: ObservableObject {
     @Published var fecha = Date()
     @Published var hora = Date()
     @Published var precio = ""
-    @Published var cupo = ""
+    @Published var cupo = 1
     @Published var tieneEstacionamiento = false
     @Published var requiereAnticipo = false
     @Published var montoAnticipo = ""
@@ -75,7 +91,7 @@ final class EventoFormViewModel: ObservableObject {
             hora = f
         }
         precio = evento.precio.map { String(format: "%.0f", $0) } ?? ""
-        cupo = evento.cupo.map(String.init) ?? ""
+        cupo = evento.cupo ?? 1
         tieneEstacionamiento = (evento.tieneEstacionamiento ?? 0).asBool
         requiereAnticipo = (evento.requiereAnticipo ?? 0).asBool
         montoAnticipo = evento.montoAnticipo.map { String(format: "%.0f", $0) } ?? ""
@@ -84,6 +100,14 @@ final class EventoFormViewModel: ObservableObject {
     }
 
     var esEdicion: Bool { idEvento != nil }
+
+    func agregarImagen(_ url: String) {
+        if imagenesTexto.isEmpty {
+            imagenesTexto = url
+        } else {
+            imagenesTexto += "\n" + url
+        }
+    }
 
     func guardar(idNegocio: Int) async -> Bool {
         guard validate() else { return false }
@@ -105,6 +129,8 @@ final class EventoFormViewModel: ObservableObject {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
+        let oldId = idEvento
+
         let data = EventoSaveRequest(
             idEvento: idEvento,
             idNegocio: idNegocio,
@@ -114,7 +140,7 @@ final class EventoFormViewModel: ObservableObject {
             precio: Double(precio) ?? 0,
             descripcion: descripcion,
             categoria: categoria,
-            cupo: Int(cupo) ?? 0,
+            cupo: cupo,
             tieneEstacionamiento: tieneEstacionamiento.asInt,
             requiereAnticipo: requiereAnticipo.asInt,
             montoAnticipo: Double(montoAnticipo) ?? 0,
@@ -123,6 +149,9 @@ final class EventoFormViewModel: ObservableObject {
         )
         do {
             _ = try await service.crearEvento(data)
+            if let oldId {
+                _ = try? await service.cancelarEvento(id: oldId)
+            }
             return true
         } catch {
             errorMessage = (error as? APIError)?.errorDescription ?? "No se pudo guardar el evento."
@@ -131,16 +160,12 @@ final class EventoFormViewModel: ObservableObject {
     }
 
     private func validate() -> Bool {
-        if nombre.isEmpty || ubicacion.isEmpty || cupo.isEmpty {
+        if nombre.isEmpty || ubicacion.isEmpty || cupo <= 0 {
             errorMessage = "Completa nombre, ubicación y cupo."
             return false
         }
         if !precio.isEmpty && Double(precio) == nil {
             errorMessage = "Precio inválido."
-            return false
-        }
-        if Int(cupo) == nil || Int(cupo)! <= 0 {
-            errorMessage = "Cupo inválido."
             return false
         }
         let cal = Calendar.current

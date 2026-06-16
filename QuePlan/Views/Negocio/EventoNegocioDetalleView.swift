@@ -8,6 +8,7 @@ struct EventoNegocioDetalleView: View {
     @State private var mostrarConfirmCancel = false
     @State private var mostrarEditar = false
     @State private var mostrarRepetir = false
+    @State private var mostrarAlertaReservas = false
 
     init(evento: Evento) {
         _vm = StateObject(wrappedValue: EventoNegocioDetalleViewModel(evento: evento))
@@ -24,7 +25,13 @@ struct EventoNegocioDetalleView: View {
                         HStack {
                             Text(vm.evento.nombre ?? "Evento").font(.title2.bold())
                             Spacer()
-                            Button { mostrarEditar = true } label: {
+                            Button {
+                                if vm.reservas.isEmpty {
+                                    mostrarEditar = true
+                                } else {
+                                    mostrarAlertaReservas = true
+                                }
+                            } label: {
                                 Image(systemName: "square.and.pencil").foregroundColor(Theme.pink)
                             }
                         }
@@ -112,11 +119,18 @@ struct EventoNegocioDetalleView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .task { await vm.cargar() }
-        .sheet(isPresented: $mostrarEditar, onDismiss: { Task { await vm.cargar() } }) {
+        .sheet(isPresented: $mostrarEditar, onDismiss: { dismiss() }) {
             NavigationStack { EventoFormView(modo: .editar(vm.evento)) }
         }
-        .sheet(isPresented: $mostrarRepetir, onDismiss: { Task { await vm.cargar() } }) {
+        .sheet(isPresented: $mostrarRepetir, onDismiss: { dismiss() }) {
             NavigationStack { EventoFormView(modo: .repetir(vm.evento)) }
+        }
+        .alert("¿Editar actividad?",
+               isPresented: $mostrarAlertaReservas) {
+            Button("Cancelar", role: .cancel) {}
+            Button("Editar de todas formas") { mostrarEditar = true }
+        } message: {
+            Text("Tienes \(vm.reservas.count) persona(s) inscrita(s). Al editar se perderán las reservas actuales.")
         }
     }
 

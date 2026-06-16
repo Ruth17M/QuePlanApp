@@ -259,6 +259,12 @@ struct OpinionRequest: Encodable {
 
 // Imagen de evento
 
+struct UploadResponse: Codable {
+    var url: String?
+    var response: String?
+    var error: String?
+}
+
 struct EventoImagen: Codable, Identifiable, Hashable {
     var idImagen: Int?
     var idEvento: Int?
