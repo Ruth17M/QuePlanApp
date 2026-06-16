@@ -143,6 +143,18 @@ final class EventoFormViewModel: ObservableObject {
             errorMessage = "Cupo inválido."
             return false
         }
+        let cal = Calendar.current
+        let comps = cal.dateComponents([.hour, .minute], from: hora)
+        let fechaFinal = cal.date(
+            bySettingHour: comps.hour ?? 0,
+            minute: comps.minute ?? 0,
+            second: 0,
+            of: fecha
+        ) ?? fecha
+        if fechaFinal <= Date() {
+            errorMessage = "La fecha y hora del evento debe ser futura."
+            return false
+        }
         return true
     }
 }

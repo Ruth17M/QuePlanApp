@@ -36,11 +36,16 @@ final class ClienteHomeViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         do {
+            let desde = fechaDesde.map { isoDay($0) } ?? isoDay(Date())
             eventos = try await service.getEventosDisponibles(
                 nombre: busqueda.isEmpty ? nil : busqueda,
-                fechaDesde: fechaDesde.map { isoDay($0) },
+                fechaDesde: desde,
                 fechaHasta: fechaHasta.map { isoDay($0) }
             )
+            .filter { evento in
+                guard let fecha = evento.fecha else { return false }
+                return fecha > Date()
+            }
         } catch {
             errorMessage = (error as? APIError)?.errorDescription ?? "No se pudieron cargar los eventos."
         }

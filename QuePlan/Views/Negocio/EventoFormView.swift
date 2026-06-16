@@ -25,6 +25,8 @@ struct EventoFormView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                InlineError(message: vm.errorMessage)
+
                 // Imagen / cambiar imagen
                 ZStack {
                     RemoteImage(urlString: vm.imagenesTexto.split(whereSeparator: \.isNewline).first.map(String.init))
@@ -83,8 +85,6 @@ struct EventoFormView: View {
                 campo("Imágenes (una URL por línea)") {
                     descripcionImagenes
                 }
-
-                InlineError(message: vm.errorMessage)
 
                 Button {
                     Task {
