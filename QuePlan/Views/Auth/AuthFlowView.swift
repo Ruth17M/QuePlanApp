@@ -57,7 +57,7 @@ struct WelcomeView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-    }
+    } 
 }
 
 struct BottomRoundedShape: Shape {

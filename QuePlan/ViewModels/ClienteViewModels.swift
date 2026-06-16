@@ -10,10 +10,9 @@ final class ClienteHomeViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     // Filtros
-    @Published var calificacionMinima: Double = 0
+    @Published var fechaDesde: Date = Calendar.current.startOfDay(for: Date())
+    @Published var fechaHasta: Date = Calendar.current.date(byAdding: .month, value: 3, to: Date())!
     @Published var tarifaMaxima: Double = 5000
-    @Published var fechaDesde: Date?
-    @Published var fechaHasta: Date?
     @Published var categoriaSeleccionada: String?
 
     private let service = QueplanService.shared
@@ -24,10 +23,13 @@ final class ClienteHomeViewModel: ObservableObject {
 
     var eventosFiltrados: [Evento] {
         eventos.filter { evento in
-            let cumpleCalificacion = (evento.promedioCalificacion ?? 0) >= calificacionMinima
-            let cumpleTarifa = (evento.precio ?? 0) <= tarifaMaxima
-            let cumpleCategoria = categoriaSeleccionada == nil || evento.categoria == categoriaSeleccionada
-            return cumpleCalificacion && cumpleTarifa && cumpleCategoria
+            let cumpleTarifa     = (evento.precio ?? 0) <= tarifaMaxima
+            let cumpleCategoria  = categoriaSeleccionada == nil || evento.categoria == categoriaSeleccionada
+            let cumpleFecha: Bool = {
+                guard let fecha = evento.fecha else { return false }
+                return fecha >= fechaDesde && fecha <= fechaHasta
+            }()
+            return cumpleTarifa && cumpleCategoria && cumpleFecha
         }
     }
 
@@ -36,11 +38,10 @@ final class ClienteHomeViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            let desde = fechaDesde.map { isoDay($0) } ?? isoDay(Date())
             eventos = try await service.getEventosDisponibles(
                 nombre: busqueda.isEmpty ? nil : busqueda,
-                fechaDesde: desde,
-                fechaHasta: fechaHasta.map { isoDay($0) }
+                fechaDesde: isoDay(fechaDesde),
+                fechaHasta: isoDay(fechaHasta)
             )
             .filter { evento in
                 guard let fecha = evento.fecha else { return false }
@@ -52,10 +53,9 @@ final class ClienteHomeViewModel: ObservableObject {
     }
 
     func restablecerFiltros() {
-        calificacionMinima = 0
+        fechaDesde = Calendar.current.startOfDay(for: Date())
+        fechaHasta = Calendar.current.date(byAdding: .month, value: 3, to: Date())!
         tarifaMaxima = 5000
-        fechaDesde = nil
-        fechaHasta = nil
         categoriaSeleccionada = nil
     }
 
@@ -66,7 +66,6 @@ final class ClienteHomeViewModel: ObservableObject {
         return f.string(from: date)
     }
 }
-
 // Detalle del evento (vista cliente)
 
 @MainActor
