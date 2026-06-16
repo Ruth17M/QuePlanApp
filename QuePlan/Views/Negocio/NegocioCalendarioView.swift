@@ -236,7 +236,7 @@ struct NegocioCalendarioView: View {
     }
 }
 
-// MARK: - Fila de evento (vista negocio)
+// Fila de evento (vista negocio)
 
 struct EventoNegocioRow: View {
     let evento: Evento

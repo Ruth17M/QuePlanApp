@@ -220,7 +220,7 @@ struct ClienteCalendarioView: View {
     }
 }
 
-// MARK: - Tira semanal con selector de mes
+// Tira semanal con selector de mes
 
 struct WeekCalendarView: View {
     @Binding var diaSeleccionado: Date
@@ -231,7 +231,6 @@ struct WeekCalendarView: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            // Encabezado días
             HStack {
                 ForEach(dias.indices, id: \.self) { i in
                     Text(dias[i]).font(.caption.bold()).foregroundColor(Theme.gray)
@@ -239,7 +238,6 @@ struct WeekCalendarView: View {
                 }
             }
 
-            // Semana del día seleccionado
             HStack {
                 ForEach(diasDeLaSemana(), id: \.self) { fecha in
                     let dia = cal.component(.day, from: fecha)
@@ -272,7 +270,7 @@ struct WeekCalendarView: View {
 
 }
 
-// MARK: - Tarjeta de actividad (reserva del cliente)
+// Tarjeta de actividad (reserva del cliente)
 
 struct ReservaActivityCard: View {
     let reserva: Reserva

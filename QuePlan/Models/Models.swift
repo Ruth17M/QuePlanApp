@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Helpers
+// helpers
 
 /// Algunos campos numéricos viajan como Int (0/1) y representan booleanos.
 /// Esta utilidad facilita su lectura.
@@ -18,7 +18,7 @@ struct APIMessage: Decodable {
     let response: String?
 }
 
-// MARK: - Negocio
+//negocio
 
 struct Negocio: Codable, Identifiable, Hashable {
     var idNegocio: Int
@@ -69,7 +69,7 @@ struct NegocioActualizarRequest: Encodable {
     var paginaWeb: String
 }
 
-// MARK: - Cliente
+// cliente
 
 struct Cliente: Codable, Identifiable, Hashable {
     var idCliente: Int
@@ -100,7 +100,7 @@ struct ClienteActualizarRequest: Encodable {
     var imagenUrl: String
 }
 
-// MARK: - Evento
+// evento
 
 struct Evento: Codable, Identifiable, Hashable {
     var idEvento: Int
@@ -141,7 +141,7 @@ struct Evento: Codable, Identifiable, Hashable {
 }
 
 struct EventoSaveRequest: Encodable {
-    var idEvento: Int? = nil           // presente al editar / repetir
+    var idEvento: Int? = nil
     var idNegocio: Int
     var nombre: String
     var fechaHora: String
@@ -176,7 +176,7 @@ struct CancelEventoResponse: Decodable {
     var afectados: [ReservaAfectada]?
 }
 
-// MARK: - Reserva
+// Reserva
 
 struct Reserva: Codable, Identifiable, Hashable {
     var idReservacion: Int
@@ -190,7 +190,7 @@ struct Reserva: Codable, Identifiable, Hashable {
     var telefonoCliente: String?
     var imagenUrl: String?
 
-    // Info embebida del evento/negocio (vista cliente).
+    // Info embebida del evento (vista cliente).
     var nombreEvento: String?
     var nombreNegocio: String?
     var logoUrl: String?
@@ -232,7 +232,7 @@ struct ReservaRequest: Encodable {
     let cantidadPersonas: Int
 }
 
-// MARK: - Opinión
+// Opinión
 
 struct Opinion: Codable, Identifiable, Hashable {
     var idOpinion: Int?
@@ -257,7 +257,7 @@ struct OpinionRequest: Encodable {
     let comentario: String
 }
 
-// MARK: - Imagen de evento
+// Imagen de evento
 
 struct EventoImagen: Codable, Identifiable, Hashable {
     var idImagen: Int?
@@ -272,10 +272,10 @@ struct EventoImagenRequest: Encodable {
     let url: String
 }
 
-// MARK: - Formato de fechas
+// Formato de fechas
 
 enum DateFormatters {
-    /// Formato que usa la API: "YYYY-MM-DD HH:MM:SS" (a veces con ".0").
+    /// Formato que usa la API: "YYYY-MM-DD HH:MM:SS"
     static let api: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -300,7 +300,6 @@ enum DateFormatters {
 
     static func parse(_ string: String?) -> Date? {
         guard var s = string, !s.isEmpty else { return nil }
-        // La API a veces agrega fracciones (".0"); las recortamos.
         if let dot = s.firstIndex(of: ".") { s = String(s[..<dot]) }
         return api.date(from: s)
     }

@@ -134,7 +134,7 @@ struct EventoNegocioDetalleView: View {
     }
 }
 
-// MARK: - Fila de reserva (vista negocio) con confirmar / cancelar
+// Fila de reserva (vista negocio) con confirmar / cancelar
 
 struct ReservaNegocioRow: View {
     let reserva: Reserva

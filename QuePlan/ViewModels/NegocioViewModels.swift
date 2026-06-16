@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Eventos del negocio (calendario / historial)
+// Eventos del negocio (calendario / historial)
 
 @MainActor
 final class NegocioEventosViewModel: ObservableObject {
@@ -36,7 +36,7 @@ final class NegocioEventosViewModel: ObservableObject {
     }
 }
 
-// MARK: - Crear / editar / repetir evento
+// Crear / editar / repetir evento
 
 @MainActor
 final class EventoFormViewModel: ObservableObject {
@@ -57,16 +57,13 @@ final class EventoFormViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    /// Si es != nil, estamos editando; si copiamos un evento para "repetir",
-    /// dejamos este nil para que se cree uno nuevo.
+
     private var idEvento: Int?
 
     private let service = QueplanService.shared
 
     init() {}
 
-    /// Precarga el formulario a partir de un evento existente.
-    /// `repetir = true` limpia el id para crear una copia nueva.
     func precargar(desde evento: Evento, repetir: Bool) {
         idEvento = repetir ? nil : evento.idEvento
         nombre = evento.nombre ?? ""
@@ -150,7 +147,7 @@ final class EventoFormViewModel: ObservableObject {
     }
 }
 
-// MARK: - Reservas de un evento ("Personas interesadas")
+// Reservas de un evento ("Personas interesadas")
 
 @MainActor
 final class ReservasEventoViewModel: ObservableObject {
@@ -190,7 +187,7 @@ final class ReservasEventoViewModel: ObservableObject {
     }
 }
 
-// MARK: - Detalle / administración de un evento del negocio
+// Detalle / administración de un evento del negocio
 
 @MainActor
 final class EventoNegocioDetalleViewModel: ObservableObject {
@@ -239,7 +236,7 @@ final class EventoNegocioDetalleViewModel: ObservableObject {
     }
 }
 
-// MARK: - Perfil del negocio
+// Perfil del negocio
 
 @MainActor
 final class NegocioPerfilViewModel: ObservableObject {

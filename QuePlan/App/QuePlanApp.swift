@@ -13,7 +13,7 @@ struct QuePlanApp: App {
     }
 }
 
-/// Decide qué flujo mostrar según la sesión activa.
+
 struct RootView: View {
     @EnvironmentObject private var session: SessionManager
 

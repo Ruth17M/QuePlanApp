@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Selección de tipo de cuenta
+// Selección de tipo de cuenta
 
 struct AccountTypeView: View {
     var body: some View {
@@ -68,7 +68,7 @@ struct TopRoundedShape: Shape {
     }
 }
 
-// MARK: - Registro de cliente
+// Registro de cliente
 
 struct ClienteRegistroView: View {
     @EnvironmentObject private var session: SessionManager
@@ -115,7 +115,7 @@ struct ClienteRegistroView: View {
     }
 }
 
-// MARK: - Registro de negocio
+// Registro de negocio
 
 struct NegocioRegistroView: View {
     @EnvironmentObject private var session: SessionManager

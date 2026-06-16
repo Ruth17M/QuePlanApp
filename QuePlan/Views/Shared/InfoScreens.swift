@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Pestaña de términos y condiciones (texto estático como en el diseño).
+/// Pestaña de términos y condiciones
 struct TerminosView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -69,7 +69,7 @@ struct AyudaView: View {
     }
 }
 
-// MARK: - Diálogos tipo tarjeta (como en las pantallas de negocio)
+// Diálogos tipo tarjeta
 
 struct CardDialog<Content: View>: View {
     let content: Content

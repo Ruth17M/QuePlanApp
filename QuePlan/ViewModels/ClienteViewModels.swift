@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Home / catálogo público
+// Home
 
 @MainActor
 final class ClienteHomeViewModel: ObservableObject {
@@ -62,7 +62,7 @@ final class ClienteHomeViewModel: ObservableObject {
     }
 }
 
-// MARK: - Detalle del evento (vista cliente)
+// Detalle del evento (vista cliente)
 
 @MainActor
 final class EventoDetalleViewModel: ObservableObject {
@@ -87,15 +87,12 @@ final class EventoDetalleViewModel: ObservableObject {
             self.evento = detalle
             self.imagenes = detalle.imagenes ?? imagenes
         } catch {
-            // mantenemos el evento recibido del listado
         }
-        // Respaldo: si no llegaron imágenes embebidas, las pedimos aparte.
         if imagenes.isEmpty {
             if let extra = try? await service.getImagenesEvento(idEvento: evento.idEvento) {
                 imagenes = extra.compactMap { $0.url }
             }
         }
-        // Opiniones de TODO el negocio ("x persona fue a x evento y dice...").
         if let idNegocio = evento.idNegocio {
             opiniones = (try? await service.getOpinionesNegocio(idNegocio: idNegocio)) ?? []
         }
@@ -105,7 +102,7 @@ final class EventoDetalleViewModel: ObservableObject {
     }
 }
 
-// MARK: - Reserva ("Asegura tu lugar")
+// Reserva
 
 @MainActor
 final class ReservaViewModel: ObservableObject {
@@ -135,7 +132,7 @@ final class ReservaViewModel: ObservableObject {
     }
 }
 
-// MARK: - Mis actividades / calendario / historial
+// Mis actividades / calendario / historial
 
 @MainActor
 final class ClienteReservasViewModel: ObservableObject {
@@ -145,14 +142,12 @@ final class ClienteReservasViewModel: ObservableObject {
 
     private let service = QueplanService.shared
 
-    /// Reservas futuras (vista "Mi experiencia").
     var proximas: [Reserva] {
         reservas
             .filter { $0.estadoEnum != .cancelada && ($0.fecha ?? .distantPast) >= Calendar.current.startOfDay(for: Date()) }
             .sorted { ($0.fecha ?? .distantFuture) < ($1.fecha ?? .distantFuture) }
     }
 
-    /// Historial completo (todas las reservas, recientes primero).
     var historial: [Reserva] {
         reservas.sorted { ($0.fecha ?? .distantPast) > ($1.fecha ?? .distantPast) }
     }
@@ -186,7 +181,7 @@ final class ClienteReservasViewModel: ObservableObject {
     }
 }
 
-// MARK: - Opinión
+// Opinión
 
 @MainActor
 final class OpinionViewModel: ObservableObject {
@@ -222,7 +217,7 @@ final class OpinionViewModel: ObservableObject {
     }
 }
 
-// MARK: - Perfil cliente
+// Perfil cliente
 
 @MainActor
 final class ClientePerfilViewModel: ObservableObject {

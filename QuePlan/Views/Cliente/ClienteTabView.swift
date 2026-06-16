@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Barra inferior del cliente: Inicio, Mi experiencia, Historial, Perfil.
 struct ClienteTabView: View {
     var body: some View {
         TabView {
@@ -20,7 +19,7 @@ struct ClienteTabView: View {
     }
 }
 
-// MARK: - Saludo reutilizable de cabecera
+// Saludo reutilizable
 
 struct GreetingHeader: View {
     let nombre: String

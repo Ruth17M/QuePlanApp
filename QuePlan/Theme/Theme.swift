@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Paleta y estilos compartidos de QuePlan.
-/// El color principal es el magenta/rosa que aparece en todas las pantallas.
 enum Theme {
     static let pink = Color(hex: 0xE60C88)
     static let pinkDark = Color(hex: 0xC30B73)
@@ -28,9 +26,7 @@ extension Color {
     }
 }
 
-// MARK: - Botones reutilizables
-
-/// Botón principal (relleno rosa con esquinas redondeadas).
+// Botones reutilizables
 struct PrimaryButtonStyle: ButtonStyle {
     var enabled: Bool = true
     func makeBody(configuration: Configuration) -> some View {
@@ -46,7 +42,6 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
-/// Botón secundario (contorno).
 struct OutlineButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -61,7 +56,7 @@ struct OutlineButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Campo de texto con estilo QuePlan
+// Campo de texto con estilo QuePlan
 
 struct QPTextField: View {
     let placeholder: String
@@ -114,7 +109,7 @@ struct QPSecureField: View {
     }
 }
 
-// MARK: - Estrellas de calificación
+// Estrellas de calificación
 
 struct StarRatingView: View {
     let rating: Double

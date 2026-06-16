@@ -126,7 +126,7 @@ struct EventoDetalleView: View {
     }
 }
 
-// MARK: - Fila de opinión
+// Fila de opinión
 
 struct OpinionRow: View {
     let opinion: Opinion
@@ -151,7 +151,7 @@ struct OpinionRow: View {
     }
 }
 
-// MARK: - Hoja de reserva ("Asegura tu lugar")
+// Hoja de reserva ("Asegura tu lugar")
 
 struct ReservaSheet: View {
     let evento: Evento

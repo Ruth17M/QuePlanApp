@@ -1,9 +1,8 @@
 import SwiftUI
 
-// MARK: - Logo de QuePlan
+// Logo de QuePlan
 
-/// Logotipo "X" estilizado de QuePlan dibujado con paths para no depender de
-/// recursos externos. Aproxima el isotipo de las pantallas.
+/// Logotipo "X" estilizado de QuePlan dibujado con paths
 struct QuePlanLogo: View {
     var color: Color = .white
     var size: CGFloat = 90
@@ -38,7 +37,7 @@ private struct LogoStroke: Shape {
     }
 }
 
-// MARK: - Imagen remota con placeholder
+// Imagen remota con placeholder
 
 struct RemoteImage: View {
     let urlString: String?
@@ -72,7 +71,7 @@ struct RemoteImage: View {
     }
 }
 
-// MARK: - Avatar circular
+// Avatar circular
 
 struct AvatarView: View {
     let urlString: String?
@@ -87,7 +86,7 @@ struct AvatarView: View {
     }
 }
 
-// MARK: - Cabecera ondulada (curva rosa superior)
+// Cabecera ondulada
 
 struct WaveHeader: View {
     var height: CGFloat = 220
@@ -115,7 +114,7 @@ struct WaveShape: Shape {
     }
 }
 
-// MARK: - Mensaje de error en línea
+// Mensaje de error en línea
 
 struct InlineError: View {
     let message: String?
@@ -129,7 +128,7 @@ struct InlineError: View {
     }
 }
 
-// MARK: - Sección con título
+// Sección con título
 
 struct SectionTitle: View {
     let text: String
@@ -140,7 +139,7 @@ struct SectionTitle: View {
     }
 }
 
-// MARK: - Estado vacío
+// Estado vacío
 
 struct EmptyStateView: View {
     let icon: String

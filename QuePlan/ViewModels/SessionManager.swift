@@ -1,14 +1,11 @@
 import Foundation
 import SwiftUI
 
-/// Tipo de cuenta seleccionado durante el registro / sesión activa.
 enum AccountType: String {
     case cliente
     case negocio
 }
 
-/// Estado global de autenticación. Decide qué flujo se muestra (auth, cliente
-/// o negocio) y conserva el usuario activo en memoria y en UserDefaults.
 @MainActor
 final class SessionManager: ObservableObject {
     @Published var cliente: Cliente?

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Modal "¿Cómo estuvo tu experiencia con ...?" para calificar al negocio.
+///  "¿Cómo estuvo tu experiencia con ...?" para calificar al negocio.
 struct OpinionModalView: View {
     let idCliente: Int
     let idEvento: Int

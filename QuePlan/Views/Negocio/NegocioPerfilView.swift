@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Mi perfil" del negocio con acceso a editar, términos, ayuda y cerrar sesión.
+/// "Mi perfil" del negocio
 struct NegocioPerfilView: View {
     @EnvironmentObject private var session: SessionManager
     @State private var mostrarCerrarSesion = false
@@ -98,7 +98,7 @@ struct NegocioPerfilView: View {
     }
 }
 
-// MARK: - Editar perfil del negocio
+// Editar perfil del negocio
 
 struct EditarNegocioView: View {
     let negocio: Negocio

@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Historial de eventos del negocio (todos: activos, pasados y cancelados).
 struct NegocioHistorialView: View {
     @EnvironmentObject private var session: SessionManager
     @StateObject private var vm = NegocioEventosViewModel()

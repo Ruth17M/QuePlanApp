@@ -73,8 +73,8 @@ struct ClienteHomeView: View {
     }
 }
 
-// MARK: - Tarjeta de evento (catálogo)
 
+//tarjeta de evento
 struct EventoCard: View {
     let evento: Evento
 
@@ -113,8 +113,7 @@ struct EventoCard: View {
     }
 }
 
-// MARK: - Filtros
-
+//eventos
 struct FiltrosView: View {
     @ObservedObject var vm: ClienteHomeViewModel
     @Environment(\.dismiss) private var dismiss

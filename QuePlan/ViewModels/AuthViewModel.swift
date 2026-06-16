@@ -9,8 +9,6 @@ final class AuthViewModel: ObservableObject {
 
     private let service = QueplanService.shared
 
-    /// Inicia sesión probando primero como cliente y luego como negocio,
-    /// salvo que ya se conozca el tipo de cuenta.
     func login(preferred: AccountType?, session: SessionManager) async {
         guard validate() else { return }
         isLoading = true
@@ -23,7 +21,6 @@ final class AuthViewModel: ObservableObject {
         case .negocio:
             await loginNegocio(session: session)
         case .none:
-            // Intento dual: primero cliente, si falla, negocio.
             if await tryLoginCliente(session: session) { return }
             if await tryLoginNegocio(session: session) { return }
             errorMessage = "Usuario o contraseña incorrectos."

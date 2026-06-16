@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Navegación del flujo de autenticación (no autenticado).
+
 struct AuthFlowView: View {
     var body: some View {
         NavigationStack {
@@ -9,7 +9,7 @@ struct AuthFlowView: View {
     }
 }
 
-// MARK: - Bienvenida
+// Bienvenida
 
 struct WelcomeView: View {
     var body: some View {
@@ -75,7 +75,7 @@ struct BottomRoundedShape: Shape {
     }
 }
 
-// MARK: - Login
+// Login
 
 struct LoginView: View {
     @EnvironmentObject private var session: SessionManager

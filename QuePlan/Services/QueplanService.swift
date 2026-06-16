@@ -15,9 +15,6 @@ enum APIError: LocalizedError {
 }
 
 /// Capa de acceso a la API de QuePlan.
-/// Mantiene la forma y estructura del servicio base, agregando el manejo de
-/// errores (la API regresa 200 con `{"response": "..."}` ante fallos) y los
-/// endpoints que faltaban respecto a la guía `endpoints.txt`.
 final class QueplanService {
 
     static let shared = QueplanService()
@@ -25,7 +22,6 @@ final class QueplanService {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
 
-    // MARK: - Núcleo
 
     private func request<T: Decodable>(
         _ path: String,
@@ -50,7 +46,6 @@ final class QueplanService {
             throw APIError.network
         }
 
-        // Intentamos el tipo esperado; si falla, buscamos el mensaje de error.
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
@@ -87,13 +82,13 @@ final class QueplanService {
         return (try? decoder.decode(APIMessage.self, from: data))?.response
     }
 
-    // MARK: - Health
+    //Health
 
     func health() async throws -> String? {
         try await requestMessage("/health", method: "GET")
     }
 
-    // MARK: - Negocio
+    //Negocio
 
     func loginNegocio(usuario: String, password: String) async throws -> Negocio {
         let body = NegocioLoginRequest(usuario: usuario, passwordHash: password)
@@ -112,7 +107,7 @@ final class QueplanService {
         try await request("/negocio/actualizar", method: "PUT", body: data)
     }
 
-    // MARK: - Cliente
+    // Cliente
 
     func loginCliente(usuario: String, password: String) async throws -> Cliente {
         let body = ClienteLoginRequest(usuario: usuario, passwordHash: password)
@@ -131,7 +126,7 @@ final class QueplanService {
         try await request("/cliente/actualizar", method: "PUT", body: data)
     }
 
-    // MARK: - Eventos
+    // Eventos
 
     func getEventosNegocio(idNegocio: Int) async throws -> [Evento] {
         try await request("/evento/getAll/\(idNegocio)")
@@ -165,7 +160,7 @@ final class QueplanService {
         try await request("/evento/delete/\(id)", method: "DELETE")
     }
 
-    // MARK: - Reservas
+    // Reservas
 
     func getReservasNegocioEvento(idEvento: Int) async throws -> [Reserva] {
         try await request("/reserva/getAllByEvento/\(idEvento)")
@@ -188,12 +183,11 @@ final class QueplanService {
         try await requestMessage("/reserva/cancelar/\(id)", method: "PUT")
     }
 
-    /// El cliente "elimina" su reserva (baja lógica -> cancelada).
     func eliminarReservaCliente(id: Int) async throws {
         try await requestMessage("/reserva/delete/\(id)", method: "DELETE")
     }
 
-    // MARK: - Opiniones
+    // Opiniones
 
     func getOpiniones(idEvento: Int) async throws -> [Opinion] {
         try await request("/opinion/getByEvento/\(idEvento)")
@@ -207,7 +201,7 @@ final class QueplanService {
         try await requestMessage("/opinion/save", method: "POST", body: data)
     }
 
-    // MARK: - Imágenes de evento
+    // Imágenes de evento
 
     func getImagenesEvento(idEvento: Int) async throws -> [EventoImagen] {
         try await request("/eventoImagen/getByEvento/\(idEvento)")
