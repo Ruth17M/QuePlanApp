@@ -105,10 +105,6 @@ struct LoginView: View {
                     QPTextField(placeholder: "Usuario", text: $vm.usuario, keyboard: .emailAddress, icon: "person")
                     QPSecureField(placeholder: "Contraseña", text: $vm.password)
 
-                    Button("¿Olvidaste tu contraseña?") {}
-                        .font(.footnote)
-                        .foregroundColor(Theme.gray)
-
                     InlineError(message: vm.errorMessage)
 
                     Button {
